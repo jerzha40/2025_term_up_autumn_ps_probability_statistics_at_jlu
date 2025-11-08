@@ -212,3 +212,9 @@ __marimo__/
 *.snm
 *.nav
 *.vrb
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.blg
+*.aux
