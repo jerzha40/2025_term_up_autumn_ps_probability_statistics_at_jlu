@@ -24,11 +24,11 @@ logging.info(f"{DP.table['Close']}")
 logging.info(f"{type(DP.table['Close'])}")
 
 close_ca = DP.table["Close"].combine_chunks()  # ChunkedArray -> Array(ListType)
-close_list = close_ca.to_pylist()
+close_list = close_ca.to_pylist()[:-1]
 close = np.asarray(close_list, dtype=np.float64)  # 价格字符串 -> float64
 
 open_time_ca = DP.table["Open Time"].combine_chunks()  # 同理
-open_time_list = open_time_ca.to_pylist()  # -> Python list of int(ms)
+open_time_list = open_time_ca.to_pylist()[:-1]  # -> Python list of int(ms)
 time = np.asarray(open_time_list, dtype="datetime64[ms]")  # 毫秒 -> datetime64[ms]
 
 logging.info(f"{open_time_ca}")
@@ -36,11 +36,14 @@ logging.info(f"{open_time_list}")
 logging.info(f"{time}")
 logging.info(f"{len(close)}")
 
+r = np.diff(np.log(close))
+
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 fig, ax = plt.subplots(figsize=(10, 4))
-ax.plot(time, close, ".-")
+ax.plot(time, np.log(close) / 100, ".-")
+ax.plot(time[:-1], r, ".-")
 ax.set_title("BTC/USDT Close")
 ax.set_xlabel("Time (UTC)")
 ax.set_ylabel("Price (USDT)")
