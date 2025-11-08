@@ -5,10 +5,16 @@ kiwisolver==1.4.9
 matplotlib==3.10.7
 numpy==2.3.4
 packaging==25.0
+pandas==2.3.3
+patsy==1.0.2
 pillow==12.0.0
 pyarrow==22.0.0
 pyarrow-stubs==20.0.0.20251107
 pyparsing==3.2.5
 python-dateutil==2.9.0.post0
+pytz==2025.2
+scipy==1.16.3
 six==1.17.0
--e git+https://github.com/jerzha40/2025_term_up_autumn_ps_probability_statistics_at_jlu.git@3730619cff88cf058dd704b4afd0c49376cef536#egg=utilsarma&subdirectory=packages
+statsmodels==0.14.5
+tzdata==2025.2
+-e git+https://github.com/jerzha40/2025_term_up_autumn_ps_probability_statistics_at_jlu.git@e3925af727f12272e5be45eec6c21505a1dbd19f#egg=utilsarma&subdirectory=packages

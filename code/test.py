@@ -57,5 +57,16 @@ fig.tight_layout()
 output_path = Path(__file__).parent.parent / "report" / "figs"
 output_path.mkdir(parents=True, exist_ok=True)  # 确保目录存在
 fig.savefig(output_path / "close_np.png", dpi=150)
-plt.show()
+# plt.show()
 plt.close(fig)
+
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import adfuller
+
+print("statsmodels version:", sm.__version__)
+
+from statsmodels.tsa.stattools import adfuller
+
+result = adfuller(r)
+print("ADF Statistic:", result[0])
+print("p-value:", result[1])
