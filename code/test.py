@@ -44,6 +44,7 @@ import matplotlib.dates as mdates
 fig, ax = plt.subplots(figsize=(10, 4))
 ax.plot(time, np.log(close) / 100, ".-")
 ax.plot(time[:-1], r, ".-")
+ax.plot(time[:-1], r**2, ".-")
 ax.set_title("BTC/USDT Close")
 ax.set_xlabel("Time (UTC)")
 ax.set_ylabel("Price (USDT)")
@@ -57,7 +58,7 @@ fig.tight_layout()
 output_path = Path(__file__).parent.parent / "report" / "figs"
 output_path.mkdir(parents=True, exist_ok=True)  # 确保目录存在
 fig.savefig(output_path / "close_np.png", dpi=150)
-# plt.show()
+plt.show()
 plt.close(fig)
 
 import statsmodels.api as sm
@@ -70,3 +71,35 @@ from statsmodels.tsa.stattools import adfuller
 result = adfuller(r)
 print("ADF Statistic:", result[0])
 print("p-value:", result[1])
+
+import numpy as np
+from statsmodels.tsa.stattools import adfuller, kpss
+from statsmodels.stats.diagnostic import het_arch
+
+# 基础健诊
+assert r.ndim == 1
+assert len(r) == len(close) - 1
+assert np.all(np.isfinite(r)), "r 里有 NaN/Inf"
+print("n, mean, std, min, max =", len(r), r.mean(), r.std(), r.min(), r.max())
+
+# ADF（带关键信息）
+adf_stat, adf_p, _, _, adf_crit, _ = adfuller(r, regression="c", autolag="AIC")
+print("ADF stat =", adf_stat, "p =", adf_p)
+print("ADF critical values:", adf_crit)
+
+# ARCH-LM（看波动聚集）
+arch_stat, arch_p, _, _ = het_arch(r)
+print("ARCH LM p-value =", arch_p)
+
+# 交叉验证 1：KPSS（原假设=平稳）
+kpss_stat, kpss_p, _, kpss_crit = kpss(r, regression="c", nlags="auto")
+print("KPSS stat =", kpss_stat, "p =", kpss_p)
+print("KPSS critical values:", kpss_crit)
+
+
+from statsmodels.stats.diagnostic import acorr_ljungbox
+
+# 对收益率本身
+print(acorr_ljungbox(r, lags=[10, 20, 30], return_df=True))
+# 对平方收益率（检验波动聚集）
+print(acorr_ljungbox(r**2, lags=[10, 20, 30], return_df=True))
