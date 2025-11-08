@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "utilsarma"
+version = "0.0.0"
+description = "ARMA modeling utilities for BTC/USDT time series analysis."
+authors = [{ name = "Zhang Jinrui", email = "zhangjr1022@mails.jlu.edu.cn" }]
+readme = "README.md"
+license = { text = "Scaffold" }
+requires-python = ">=3.11"
+keywords = ["ARMA", "time-series", "BTCUSDT", "statistics"]
+dependencies = []
