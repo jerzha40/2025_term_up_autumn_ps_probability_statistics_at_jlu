@@ -178,3 +178,52 @@ print(df.sort_values("AIC").head(10))
 
 print("\n按 BIC 排序：")
 print(df.sort_values("BIC").head(10))
+
+
+model = sm.tsa.ARIMA(r, order=(0, 0, 2))
+fitted = model.fit()
+print(fitted.summary())
+resid = fitted.resid
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 假设 fitted 已经是 ARMA(0,2) 拟合结果
+# 1. 取最后 200 个点作为测试集（你可以改成别的长度）
+split = -200
+r_train = r[:split]
+r_test = r[split:]
+
+model = sm.tsa.ARIMA(r_train, order=(0, 0, 2))
+fitted_train = model.fit()
+
+# 2. 对测试期做一步预测（滚动）
+pred = fitted_train.get_forecast(steps=len(r_test))
+mean_forecast = pred.predicted_mean
+conf_int = pred.conf_int(alpha=0.05)
+
+# 3. 计算预测误差指标
+err = r_test - mean_forecast
+rmse = np.sqrt(np.mean(err**2))
+mae = np.mean(np.abs(err))
+mape = np.mean(np.abs(err / r_test)) * 100
+
+print("RMSE =", rmse)
+print("MAE  =", mae)
+print("MAPE =", mape)
+
+# 4. 画预测图（真实 vs 预测）
+plt.figure(figsize=(10, 4))
+plt.plot(r_test, label="read")
+plt.plot(mean_forecast, label="predict")
+plt.fill_between(
+    np.arange(len(mean_forecast)),
+    conf_int[:, 0],  # 左列
+    conf_int[:, 1],  # 右列
+    alpha=0.2,
+    label="95% Belief range",
+)
+plt.legend()
+plt.tight_layout()
+plt.savefig("report/figs/forecast.png", dpi=150)
+plt.close()
