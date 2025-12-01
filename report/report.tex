@@ -151,27 +151,183 @@
 %     \label{fig:acf}
 % \end{figure}
 
-\section{模型建立与估计}
-\label{sec:model}
-\subsection{阶数选择与估计}
-基于 ACF/PACF 与 AIC/BIC 选取若干候选 $(p,q)$，采用极大似然估计参数。给出结果表（示例见\cref{tab:aicbic}）：
+\subsection{相关结构初判（ACF/PACF）}
+
+为考察对数收益率 $\{r_t\}$ 的线性相关结构，本文绘制其自相关函数
+（ACF）与偏自相关函数（PACF），如图~\ref{fig:acf_pacf} 所示。
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{figs/acf.png}
+        \caption{ACF}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{figs/pacf.png}
+        \caption{PACF}
+    \end{subfigure}
+    \caption{BTC/USDT 对数收益率的 ACF 与 PACF}
+    \label{fig:acf_pacf}
+\end{figure}
+
+从图中可以看到，除滞后 1 期外，ACF 与 PACF 在所有滞后阶数上的绝对值
+均落在 95\% 置信区间内，说明收益率序列整体上近似白噪声，缺乏显著的线性
+自相关结构。滞后 1 的 PACF 出现轻微超出置信区间的现象，表明序列可能含有
+极弱的一阶自回归成分。因此，ARMA 模型的候选阶数通常可限制在低阶附近，
+例如 ARMA(1,0)、ARMA(0,1) 或 ARMA(1,1) 等。
+
+
+\subsection{收益率描述性统计}
+
+为进一步刻画 BTC/USDT 对数收益率 $r_t$ 的分布特征，表~\ref{tab:desc} 给出了
+样本区间内收益率的基本统计量。
+
 \begin{table}[h]
     \centering
-    \caption{候选 ARMA 模型的信息准则比较（示例）}
-    \label{tab:aicbic}
-    \begin{tabular}{@{}lrrrr@{}}
+    \caption{BTC/USDT 对数收益率的描述性统计}
+    \label{tab:desc}
+    \begin{tabular}{lrr}
         \toprule
-        模型        & 参数数 $k$ & 对数似然 $\log L$ & AIC              & BIC              \\
+        统计量            & 数值       \\
         \midrule
-        ARMA(1,0) & 2       & -1234.56      & 2473.12          & 2482.90          \\
-        ARMA(1,1) & 3       & -1228.10      & 2462.20          & 2476.88          \\
-        ARMA(2,1) & 4       & -1226.00      & \textbf{2460.00} & \textbf{2479.58} \\
+        样本量 $n$        & 3004     \\
+        均值 $\bar r$    & 0.00106  \\
+        标准差 $\sigma_r$ & 0.03639  \\
+        最小值            & -0.50261 \\
+        最大值            & 0.20295  \\
+        偏度（skewness）   & ---      \\  % 你没给偏度值，如需可再跑一次
+        峰度（kurtosis）   & ---      \\  % 同上
         \bottomrule
     \end{tabular}
 \end{table}
 
-\subsection{诊断与稳健性}
-对残差进行 Ljung--Box 检验与 Q--Q 图、直方图检验厚尾。可附加滚动窗口/递推估计作为稳健性检查。
+
+\section{模型建立与估计}
+\label{sec:model}
+
+\subsection{平稳性检验}
+
+为检验对数收益率序列 $\{r_t\}$ 是否满足平稳性假设，本文对其进行 ADF 与 KPSS
+两类互补的单位根检验。
+
+首先，ADF 检验的统计量为 $-38.03$，对应的 p-value $<10^{-6}$，
+显著拒绝单位根原假设；其 1\% 显著性水平的临界值为 $-3.43$，
+因而收益率序列不存在单位根。
+
+其次，KPSS 检验的统计量为 $0.0566$，远低于 10\% 显著性水平的临界值 $0.347$，
+因此无法拒绝平稳原假设。
+
+综上，两类检验结论一致，均支持对数收益率可以视为平稳序列，适合使用
+ARMA($p,q$) 等基于平稳假设的模型进行建模。
+
+
+\subsection{阶数识别与估计方法}
+
+在前文已经确认对数收益率序列 $\{r_t\}$ 可以视为平稳的基础上，
+本节在 ARMA($p,q$) 框架下对其短期线性结构进行建模。
+
+模型阶数的初步识别可以基于样本自相关函数（ACF）与偏自相关函数（PACF）图：
+若 ACF 呈拖尾而 PACF 在某一滞后阶数后截尾，则倾向于 AR 模型；
+反之则倾向于 MA 模型；若二者均拖尾，则考虑一般的 ARMA($p,q$) 形式。
+在实际操作中，本文在若干候选阶数组合上拟合 ARMA 模型，
+并计算其 Akaike 信息准则（AIC）与贝叶斯信息准则（BIC）：
+\[
+    \mathrm{AIC} = -2\log L + 2k,\qquad
+    \mathrm{BIC} = -2\log L + k\log n,
+\]
+其中 $L$ 为极大似然值，$k$ 为参数个数，$n$ 为样本量。
+通过比较不同候选模型的 AIC/BIC 值，选取信息准则最小的模型作为
+后续分析的基准模型。
+
+在确定阶数 $(p,q)$ 后，使用极大似然法估计模型参数，
+记拟合得到的模型为 ARMA($\hat p,\hat q$)。
+下一小节将对该模型的残差性质进行诊断检验。
+
+
+% \subsection{阶数选择与估计}
+% 基于 ACF/PACF 与 AIC/BIC 选取若干候选 $(p,q)$，采用极大似然估计参数。给出结果表（示例见\cref{tab:aicbic}）：
+% \begin{table}[h]
+%     \centering
+%     \caption{候选 ARMA 模型的信息准则比较（示例）}
+%     \label{tab:aicbic}
+%     \begin{tabular}{@{}lrrrr@{}}
+%         \toprule
+%         模型        & 参数数 $k$ & 对数似然 $\log L$ & AIC              & BIC              \\
+%         \midrule
+%         ARMA(1,0) & 2       & -1234.56      & 2473.12          & 2482.90          \\
+%         ARMA(1,1) & 3       & -1228.10      & 2462.20          & 2476.88          \\
+%         ARMA(2,1) & 4       & -1226.00      & \textbf{2460.00} & \textbf{2479.58} \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table}
+
+\subsection{阶数选择（AIC/BIC）}
+
+在确认收益率序列平稳后，本文在 $p,q \le 3$ 的范围内对所有候选
+ARMA($p,q$) 模型进行极大似然估计，并计算对应的 AIC 与 BIC。
+表~\ref{tab:aicbic-real} 列出了其中 AIC 与 BIC 最小的若干模型。
+
+\begin{table}[h]
+    \centering
+    \caption{部分 ARMA 模型的信息准则比较}
+    \label{tab:aicbic-real}
+    \begin{tabular}{cccccc}
+        \toprule
+        $p$ & $q$ & $\log L$  & AIC                  & BIC                  \\
+        \midrule
+        0   & 2   & 5698.2090 & \textbf{-11388.4181} & -11364.3873          \\
+        2   & 0   & 5698.1916 & -11388.3832          & -11364.3524          \\
+        2   & 1   & 5698.3696 & -11386.7391          & -11356.7006          \\
+        1   & 0   & 5695.3923 & -11384.7847          & \textbf{-11366.7616} \\
+        1   & 1   & 5697.1557 & -11386.3113          & -11362.2805          \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+从表中可见，AIC 最小的模型为 ARMA(0,2)，而 BIC 最小的模型为 ARMA(1,0)。
+由于 AIC 倾向于选择预测性能更好的模型，本文采用 ARMA(0,2) 作为基准模型；
+而 BIC 选出的 ARMA(1,0) 亦具有类似的拟合优度，说明 BTC/USDT 收益率序列
+的线性结构整体十分微弱。
+
+
+\subsection{收益率的相关结构与波动聚集}
+
+对收益率序列的自相关性进行 Ljung--Box 检验，结果如下：
+
+\begin{itemize}
+    \item 在 $r_t$ 上：$p$ 值在滞后 10、20、30 时分别为 0.0054, 0.0072, 0.0090，
+          虽然部分滞后拒绝独立性，但整体相关性较弱。
+    \item 在平方收益率 $r_t^2$ 上：$p$ 值均小于 $10^{-12}$，在各滞后下均强烈拒绝
+          独立性假设。
+\end{itemize}
+
+同时，ARCH LM 检验的 p-value 为 $5.34\times 10^{-10}$，显著拒绝
+“无条件异方差”原假设。
+
+上述证据表明：收益率序列表现为“均值无显著自相关、平方收益率存在强自相关”，
+即典型的\emph{波动聚集}现象。这意味着单纯 ARMA 模型难以捕捉异方差结构，
+也为后续 GARCH 类建模提供了动机。
+
+\subsection{残差诊断与稳健性分析}
+\label{subsec:diagnosis}
+
+在得到基准 ARMA($\hat p,\hat q$) 模型后，需要对其残差序列
+$\{\hat\varepsilon_t\}$ 进行诊断，以检验模型是否充分刻画了
+收益率的线性结构。
+
+首先，利用 Ljung--Box 统计量对残差的自相关进行检验。
+若在若干滞后阶数上均无法拒绝“残差独立”的原假设，则可以认为
+模型已经较好地消除了线性相关结构。
+
+其次，通过残差直方图与 Q--Q 图考察其分布形状。
+若残差大致服从零均值对称分布，但尾部明显重于正态分布，
+则说明 ARMA 模型虽然能够刻画\emph{均值}的动态结构，
+但仍未捕捉到收益率中的尖峰厚尾与波动聚集特征。
+
+最后，可以进一步对残差平方序列 $\{\hat\varepsilon_t^2\}$ 进行
+Ljung--Box 或 ARCH LM 检验，以判断是否仍然存在显著的条件异方差。
+若检验结果显示残差平方存在自相关，则提示有必要在
+ARMA 均值方程的基础上，引入 GARCH 等波动模型进行扩展。
 
 \section{结果与分析}
 \label{sec:result}

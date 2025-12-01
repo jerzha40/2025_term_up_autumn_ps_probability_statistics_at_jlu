@@ -71,6 +71,33 @@ output_path.mkdir(parents=True, exist_ok=True)  # 确保目录存在
 # plt.show()
 plt.close(fig)
 
+
+import matplotlib.pyplot as plt
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from pathlib import Path
+
+# 假设 r 已经算好了，是一维 numpy 数组
+
+fig_acf, ax_acf = plt.subplots(figsize=(8, 4))
+plot_acf(r, lags=40, ax=ax_acf)
+ax_acf.set_title("ACF of BTC/USDT log-returns")
+fig_acf.tight_layout()
+
+fig_pacf, ax_pacf = plt.subplots(figsize=(8, 4))
+plot_pacf(r, lags=40, ax=ax_pacf, method="ywm")
+ax_pacf.set_title("PACF of BTC/USDT log-returns")
+fig_pacf.tight_layout()
+
+output_path = Path(__file__).parent.parent / "report" / "figs"
+output_path.mkdir(parents=True, exist_ok=True)
+
+fig_acf.savefig(output_path / "acf.png", dpi=150)
+fig_pacf.savefig(output_path / "pacf.png", dpi=150)
+
+plt.close(fig_acf)
+plt.close(fig_pacf)
+
+
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
 
@@ -113,3 +140,41 @@ from statsmodels.stats.diagnostic import acorr_ljungbox
 print(acorr_ljungbox(r, lags=[10, 20, 30], return_df=True))
 # 对平方收益率（检验波动聚集）
 print(acorr_ljungbox(r**2, lags=[10, 20, 30], return_df=True))
+
+
+import warnings
+
+warnings.filterwarnings("ignore")
+
+import pandas as pd
+import statsmodels.api as sm
+
+results = []
+max_p = 3
+max_q = 3
+
+for p in range(max_p + 1):
+    for q in range(max_q + 1):
+        if p == 0 and q == 0:
+            continue
+        try:
+            model = sm.tsa.ARIMA(r, order=(p, 0, q))
+            fitted = model.fit()
+            results.append(
+                {
+                    "p": p,
+                    "q": q,
+                    "logL": fitted.llf,
+                    "AIC": fitted.aic,
+                    "BIC": fitted.bic,
+                }
+            )
+        except Exception as e:
+            print(f"ARMA({p},{q}) failed: {e}")
+
+df = pd.DataFrame(results)
+print("\n按 AIC 排序：")
+print(df.sort_values("AIC").head(10))
+
+print("\n按 BIC 排序：")
+print(df.sort_values("BIC").head(10))
