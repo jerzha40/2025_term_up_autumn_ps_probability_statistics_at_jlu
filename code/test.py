@@ -42,12 +42,9 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 fig, ax = plt.subplots(figsize=(10, 4))
-ax.plot(time, np.log(close) / 100, ".-")
-ax.plot(time[:-1], r, ".-")
-ax.plot(time[:-1], r**2, ".-")
-ax.set_title("BTC/USDT Close")
+
+# ax.set_title("BTC/USDT Close")
 ax.set_xlabel("Time (UTC)")
-ax.set_ylabel("Price (USDT)")
 ax.grid(True, which="major", linestyle="--", linewidth=0.6, alpha=0.7)  # 主网格
 ax.minorticks_on()  # 打开次刻度（更细的刻度线）
 ax.grid(
@@ -55,10 +52,23 @@ ax.grid(
 )  # 次网格ax.xaxis.set_major_locator(mdates.AutoDateLocator())
 ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(ax.xaxis.get_major_locator()))
 fig.tight_layout()
+
+ax.set_ylabel("Price (USDT)")
+ax.plot(time, np.log(close) / 100, ".-")
+# ax.clear()
+
+ax.set_ylabel("r (1)")
+ax.plot(time[:-1], r, ".-")
+# ax.clear()
+
+ax.set_ylabel("r**2 (1)")
+ax.plot(time[:-1], r**2, ".-")
+# ax.clear()
+
 output_path = Path(__file__).parent.parent / "report" / "figs"
 output_path.mkdir(parents=True, exist_ok=True)  # 确保目录存在
-fig.savefig(output_path / "close_np.png", dpi=150)
-plt.show()
+# fig.savefig(output_path / "close_np.png", dpi=150)
+# plt.show()
 plt.close(fig)
 
 import statsmodels.api as sm

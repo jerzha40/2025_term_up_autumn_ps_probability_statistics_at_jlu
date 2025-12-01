@@ -84,7 +84,7 @@
 \section{数据获取与预处理}
 \label{sec:data}
 \subsection{数据来源与区间}
-本文使用 Binance 交易所的 BTC/USDT K 线数据（频率：\emph{填入：日/小时}；区间：\emph{填入：YYYY--YYYY}）。为规避价格层级非平稳性，后续以对数收益率 $r_t=\Delta\log P_t$ 为研究对象。
+本文使用 Binance 交易所的 BTC/USDT K 线数据（频率：\emph{日}；区间：\emph{2017-08-17-2025-11-07}）。为规避价格层级非平稳性，后续以对数收益率 $r_t=\Delta\log P_t$ 为研究对象。
 
 \subsection{获取方法（代码简述）}
 % 此处可放置你 Python 抓取/读取 CSV 的最简片段或伪代码
@@ -99,20 +99,43 @@
 \end{algorithm}
 
 \subsection{可视化展示}
-% 占位：价格与收益率时序图、ACF/PACF 图见\cref{fig:ts,fig:acf}。
-% \begin{figure}[h]
-%     \centering
-%     \begin{subfigure}{0.48\textwidth}
-%         \includegraphics[width=\linewidth]{figs/price.pdf}
-%         \caption{价格时序（占位）}
-%     \end{subfigure}\hfill
-%     \begin{subfigure}{0.48\textwidth}
-%         \includegraphics[width=\linewidth]{figs/returns.pdf}
-%         \caption{对数收益率（占位）}
-%     \end{subfigure}
-%     \caption{BTC/USDT 数据概览}
-%     \label{fig:ts}
-% \end{figure}
+
+为了对 BTC/USDT 的基本统计特征形成直观认识，本节展示样本区间内的收盘价、
+对数收益率以及收益率平方的时间序列，如图~\ref{fig:ts} 所示。
+
+\begin{figure}[h]
+    \centering
+
+    % --- Price series ---
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{figs/price.png}
+        \caption{BTC/USDT 收盘价时间序列}
+        \label{fig:ts:price}
+    \end{subfigure}
+    \hfill
+    % --- Returns series ---
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{figs/returns.png}
+        \caption{对数收益率 $r_t$ 时间序列}
+        \label{fig:ts:return}
+    \end{subfigure}
+
+    % --- Squared returns series ---
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{figs/returns_sq.png}
+        \caption{收益率平方 $r_t^2$ 时间序列}
+        \label{fig:ts:return_sq}
+    \end{subfigure}
+
+    \caption{BTC/USDT 样本区间内的价格、收益率与收益率平方的时间序列}
+    \label{fig:ts}
+\end{figure}
+
+图~\ref{fig:ts:price} 展示了收盘价的整体走势，可以看到价格在样本区间内经历了多轮上涨与回调，
+呈现出显著的非平稳性特征。与此对应，图~\ref{fig:ts:return} 给出了对数收益率 $r_t$，
+收益率序列大体围绕零均值随机波动，但在部分时段出现明显更大的振幅。图~\ref{fig:ts:return_sq}
+展示了收益率平方 $r_t^2$，极端值呈簇状分布，反映出典型的波动聚集（volatility clustering）现象，
+为后续可能的异方差模型（如 GARCH）提供了动机。
 
 % \begin{figure}[h]
 %     \centering

@@ -1,9 +1,9 @@
 contourpy==1.3.3
 cycler==0.12.1
-fonttools==4.60.1
+fonttools==4.61.0
 kiwisolver==1.4.9
 matplotlib==3.10.7
-numpy==2.3.4
+numpy==2.3.5
 packaging==25.0
 pandas==2.3.3
 patsy==1.0.2
@@ -17,4 +17,4 @@ scipy==1.16.3
 six==1.17.0
 statsmodels==0.14.5
 tzdata==2025.2
--e git+https://github.com/jerzha40/2025_term_up_autumn_ps_probability_statistics_at_jlu.git@bca2522b1cf537a2bb81f1f995564637e95ff004#egg=utilsarma&subdirectory=..\..\..\..\academic\2025_term_up_autumn\2025_term_up_autumn_ps_probability_statistics_at_jlu\packages
+-e git+https://github.com/jerzha40/2025_term_up_autumn_ps_probability_statistics_at_jlu.git@ba900b419eb2564d6ad0e558d074e73f25d07189#egg=utilsarma&subdirectory=..\..\..\..\academic\2025_term_up_autumn\2025_term_up_autumn_ps_probability_statistics_at_jlu\packages
